@@ -4,12 +4,17 @@ import dotenv
 from google import genai
 dotenv.load_dotenv()
 
+from PIL import Image
 
 client = genai.Client()
 
+
+image = Image.open("first.png")
+prompt = "Create a picture where the table cloth is black in the image"
+
 response = client.models.generate_content(
     model="gemini-2.5-flash-image",
-    contents="Create a picture of a nano banana dish in a fancy restaurant with a Gemini theme"
+    contents=[prompt, image]
 )
 
 
