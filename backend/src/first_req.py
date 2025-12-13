@@ -2,6 +2,7 @@
 
 import dotenv
 from google import genai
+from google.genai import types
 dotenv.load_dotenv()
 
 from PIL import Image
@@ -9,12 +10,21 @@ from PIL import Image
 client = genai.Client()
 
 
-image = Image.open("first.png")
-prompt = "Create a picture where the table cloth is black in the image"
+image = Image.open("male-mannequin.jpg")
+aspect_ratio = "16:9"
+resolution = "2k"
+prompt = input("Enter a prompt: ")
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash-image",
-    contents=[prompt, image]
+    model="gemini-3-pro-image-preview",
+    contents=[prompt, image],
+    config=types.GenerateContentConfig(
+        response_modalities=['TEXT', 'IMAGE'],
+        image_config=types.ImageConfig(
+            aspect_ratio=aspect_ratio,
+            image_size=resolution
+        ),
+    )
 )
 
 
