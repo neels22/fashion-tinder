@@ -11,7 +11,7 @@ client = genai.Client()
 
 
 image = Image.open("male-mannequin.jpg")
-aspect_ratio = "16:9"
+# aspect_ratio = "5:4"
 resolution = "2k"
 prompt = input("Enter a prompt: ")
 
@@ -21,7 +21,7 @@ response = client.models.generate_content(
     config=types.GenerateContentConfig(
         response_modalities=['TEXT', 'IMAGE'],
         image_config=types.ImageConfig(
-            aspect_ratio=aspect_ratio,
+            # aspect_ratio=aspect_ratio,
             image_size=resolution
         ),
     )
