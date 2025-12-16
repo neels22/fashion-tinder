@@ -26,3 +26,5 @@ Outfit Description: A casual, preppy outfit featuring a white cable-knit quarter
 prompt_7 = """
 Outfit Description: A complete outfit consisting of a navy blue and white color-block rugby polo shirt. The shirt features a broad white horizontal stripe across the chest with the text 'West University' written in a script font, a white collar, and a crest logo on the upper left chest. The bottoms are white wide-leg denim jeans with a relaxed, baggy fit. Footwear includes black high-top canvas sneakers (similar to Chuck 70s) featuring white laces and toe caps.
 """
+
+prompts_arr = [prompt_1, prompt_2, prompt_3, prompt_4, prompt_5, prompt_6, prompt_7]
