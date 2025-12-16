@@ -9,7 +9,7 @@ dotenv.load_dotenv()
 client = genai.Client()
 
 
-base_image = Image.open("male-mannequin.jpg")
+base_image = Image.open("input_images/male-mannequin.jpg")
 # aspect_ratio = "5:4"
 resolution = "2k"
 
@@ -34,10 +34,10 @@ for prompt in prompts_arr:
             print(part.text)
         elif part.inline_data is not None:
             generated_image = part.as_image()
-            generated_image.save(f"generated_image_{id}.png")
+            generated_image.save(f"generated_images/generated_image_{id}.png")
 
 # response = client.models.generate_content(
-#         model="gemini-2.5-flash-image",
+#         model="gemini-3-pro-image-preview",
 #         contents=[prompts_arr[0], base_image],
 #         # config=types.GenerateContentConfig(
 #         #     response_modalities=['TEXT', 'IMAGE'],
