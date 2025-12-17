@@ -1,57 +1,86 @@
-
+import os
+from typing import List, Dict
 
 import dotenv
 from google import genai
 from google.genai import types
+from google.genai.errors import ClientError
 from PIL import Image
 from prompts_dir.prompts import prompts_arr
+
 dotenv.load_dotenv()
 client = genai.Client()
 
+INPUT_IMAGE_PATH = "input_images/male-mannequin.jpg"
+OUTPUT_DIR = "generated_images"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-base_image = Image.open("input_images/male-mannequin.jpg")
-# aspect_ratio = "5:4"
-resolution = "2k"
+
+def load_base_image() -> Image.Image:
+    return Image.open(INPUT_IMAGE_PATH)
 
 
-id =0
-for prompt in prompts_arr:
-    id += 1
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-image",
-        contents=[prompt, base_image],
-        # config=types.GenerateContentConfig(
-        #     response_modalities=['TEXT', 'IMAGE'],
-        #     image_config=types.ImageConfig(
-        #         # aspect_ratio=aspect_ratio,
-        #         image_size=resolution
-        #     ),
-        # )
-    )
+def create_multiple_images() -> List[Dict]:
+    base_image = load_base_image()
+    results: List[Dict] = []
+
+    for idx, prompt in enumerate(prompts_arr, start=1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash-image",
+                contents=[prompt, base_image],
+            )
+        except ClientError as e:
+            # You can log this; return partial success upstream
+            results.append({"prompt": prompt, "error": str(e)})
+            continue
+
+        image_path = None
+        text_parts: List[str] = []
+
+        for part in response.parts:
+            if part.text is not None:
+                text_parts.append(part.text)
+            elif part.inline_data is not None:
+                generated_image = part.as_image()
+                image_path = f"{OUTPUT_DIR}/generated_image_{idx}.png"
+                generated_image.save(image_path)
+
+        results.append(
+            {
+                "prompt": prompt,
+                "texts": text_parts,
+                "image_path": image_path,
+            }
+        )
+
+    return results
+
+
+def create_single_image(prompt: str) -> Dict:
+    base_image = load_base_image()
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-pro-image-preview",
+            contents=[prompt, base_image],
+        )
+    except ClientError as e:
+        return {"prompt": prompt, "error": str(e)}
+
+    image_path = None
+    text_parts: List[str] = []
 
     for part in response.parts:
         if part.text is not None:
-            print(part.text)
+            text_parts.append(part.text)
         elif part.inline_data is not None:
             generated_image = part.as_image()
-            generated_image.save(f"generated_images/generated_image_{id}.png")
+            image_path = "generated_image.png"
+            generated_image.save(image_path)
 
-# response = client.models.generate_content(
-#         model="gemini-3-pro-image-preview",
-#         contents=[prompts_arr[0], base_image],
-#         # config=types.GenerateContentConfig(
-#         #     response_modalities=['TEXT', 'IMAGE'],
-#         #     image_config=types.ImageConfig(
-#         #         image_size=resolution
-#         #     ),
-#         # )
-#     )
-
-# for part in response.parts:
-#     if part.text is not None:
-#         print(part.text)
-#     elif part.inline_data is not None:
-#         generated_image = part.as_image()
-#         generated_image.save(f"generated_image.png")
-
-
+    return {
+        "prompt": prompt,
+        "texts": text_parts,
+        "image_path": image_path,
+    }
