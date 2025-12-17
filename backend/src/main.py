@@ -1,7 +1,11 @@
-from fastapi import FastAPI
-from image_generation import create_multiple_images, create_single_image
+from fastapi import FastAPI, Query, HTTPException, status, Body
+from .scripts.image_generation import create_multiple_images, create_single_image
 app = FastAPI()
 
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 @app.get("/multiple_images")
 async def generate_multiple_images():

@@ -6,7 +6,7 @@ from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
 from PIL import Image
-from prompts_dir.prompts import prompts_arr
+from ..prompts_dir.prompts import prompts_arr
 
 dotenv.load_dotenv()
 client = genai.Client()
@@ -57,12 +57,13 @@ def create_multiple_images() -> List[Dict]:
     return results
 
 
-def create_single_image(prompt: str) -> Dict:
+prompts_for_single_image = prompts_arr[0]   
+def create_single_image(prompt: str = prompts_for_single_image) -> Dict:
     base_image = load_base_image()
 
     try:
         response = client.models.generate_content(
-            model="gemini-3-pro-image-preview",
+            model="gemini-2.5-flash-image",
             contents=[prompt, base_image],
         )
     except ClientError as e:
@@ -84,3 +85,8 @@ def create_single_image(prompt: str) -> Dict:
         "texts": text_parts,
         "image_path": image_path,
     }
+
+
+if __name__ == "__main__":
+    print(create_multiple_images())
+    print(create_single_image(prompts_for_single_image))
