@@ -77,7 +77,7 @@ def create_single_image(prompt: str = prompts_for_single_image) -> Dict:
             text_parts.append(part.text)
         elif part.inline_data is not None:
             generated_image = part.as_image()
-            image_path = "generated_image.png"
+            image_path = f"{OUTPUT_DIR}/generated_image.png"
             generated_image.save(image_path)
 
     return {
