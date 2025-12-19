@@ -59,7 +59,7 @@ async def upload_image(file: UploadFile = File(...)):
     # 4. Return info (including public URL)
     return {
         "filename": new_filename,
-        "url": f"/images/{new_filename}",
+        "url": f"/input_images/{new_filename}", #Using / on strings joins them.
         "content_type": file.content_type,
         "size_bytes": len(file_bytes),
     }   
