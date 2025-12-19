@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Query, HTTPException, status, Body
+from fastapi import FastAPI, Query, HTTPException, status, Body, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from .scripts.image_generation import create_multiple_images, create_single_image
+import uuid
 app = FastAPI()
 
 app.add_middleware(
@@ -12,9 +14,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+UPLOAD_DIR = Path("input_images")
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 # Mount the generated_images directory as static files
 app.mount("/images", StaticFiles(directory="generated_images"), name="images")
+app.mount("/input_images", StaticFiles(directory=str(UPLOAD_DIR)), name="input_images")
 
 
 @app.get("/")
@@ -33,3 +38,28 @@ async def generate_single_image():
         filename = result["image_path"].replace("\\", "/").split("/")[-1]
         result["image_url"] = f"/images/{filename}"
     return result
+
+@app.post("/upload_image")
+async def upload_image(file: UploadFile = File(...)):
+    # 1. Validate content type (simple check)
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    # 2. Generate a safe unique filename
+    ext = Path(file.filename).suffix  # keeps .png / .jpg / etc.
+    new_filename = f"{uuid.uuid4().hex}{ext}"
+    save_path = UPLOAD_DIR / new_filename #Using / on Path objects joins paths.
+
+    # 3. Save to disk (reads the whole file into memory; fine for small images)
+    try:
+        file_bytes = await file.read()
+        save_path.write_bytes(file_bytes)
+    finally:
+        await file.close()
+
+    # 4. Return info (including public URL)
+    return {
+        "filename": new_filename,
+        "url": f"/images/{new_filename}",
+        "content_type": file.content_type,
+        "size_bytes": len(file_bytes),
+    }   
