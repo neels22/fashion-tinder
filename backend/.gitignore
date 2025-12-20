@@ -2,3 +2,4 @@
 __pycache__/
 venv/
 generated_images/
+input_images/

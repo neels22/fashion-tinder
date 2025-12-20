@@ -1,6 +1,7 @@
 import { Text, View, Button, StyleSheet, Image } from "react-native";
 import axios from "axios";
 import React, { useState } from "react";
+import * as ImagePicker from 'expo-image-picker';
 
 const API_URL = "http://10.0.0.108:8000";
 
@@ -8,6 +9,7 @@ const API_URL = "http://10.0.0.108:8000";
 export default function Index() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
 
   const generateImage = async () => {
     try {
@@ -24,6 +26,62 @@ export default function Index() {
     }
   };
 
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      alert('permissions not granted');
+      return;
+    }
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+      console.log(result.assets[0].uri);
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (imageUri: string) => {
+    try {
+      const formData = new FormData();
+      
+      // Extract filename from URI
+      const filename = imageUri.split('/').pop() || 'photo.jpg';
+      
+      // Determine file type
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image/jpg`;
+      
+      // Append file with proper structure for React Native
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type: type,
+      } as any);
+      
+      const response = await axios.post(`${API_URL}/upload_image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+  
+
+    
+
+    
   return (
     <View
       style={{
@@ -34,6 +92,9 @@ export default function Index() {
       }}
     >
       <Text style={{ fontSize: 18, marginBottom: 20 }}>Hey there! I am indraneel</Text>
+
+      <Button title="Pick Image" color="blue" onPress={pickImage} />
+
       <Button 
         title={loading ? "Generating..." : "Generate Image"} 
         color="blue" 
