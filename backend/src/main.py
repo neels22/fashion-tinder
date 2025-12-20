@@ -63,3 +63,15 @@ async def upload_image(file: UploadFile = File(...)):
         "content_type": file.content_type,
         "size_bytes": len(file_bytes),
     }   
+
+
+# todo figure out a way to provide the uploaded image to the image generation script 
+"""
+to pick up the image uplaoded by user -- we need to identify which image did the user upload
+- right now there no way to identify which image did the user upload
+- so which ever is the latest image uploaded by the user will be used for the image generation
+- so when user uploads a new image maybe we can update the input_image path with the name of this new image
+- so when user clicks on generate image button we can use the updated input_image path for the image generation
+- this is good for now for a single user use case 
+- but for a multi user use case we need to identify which image did the user upload
+"""
