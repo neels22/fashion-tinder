@@ -11,14 +11,19 @@ from ..prompts_dir.prompts import prompts_arr
 dotenv.load_dotenv()
 client = genai.Client()
 
-INPUT_IMAGE_PATH = "input_images/male-mannequin.jpg"
+# INPUT_IMAGE_PATH = "input_images/male-mannequin.jpg"
 OUTPUT_DIR = "generated_images"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-
+INPUT_IMAGE_PATH = None
 def load_base_image() -> Image.Image:
+    if INPUT_IMAGE_PATH is None:
+        raise ValueError("Input image path is not set")
     return Image.open(INPUT_IMAGE_PATH)
 
+def set_input_image_path(filename: str) -> None:
+    global INPUT_IMAGE_PATH
+    INPUT_IMAGE_PATH = f"input_images/{filename}"
 
 def create_multiple_images() -> List[Dict]:
     base_image = load_base_image()
@@ -57,7 +62,7 @@ def create_multiple_images() -> List[Dict]:
     return results
 
 
-prompts_for_single_image = prompts_arr[0]   
+prompts_for_single_image = prompts_arr[1]   
 def create_single_image(prompt: str = prompts_for_single_image) -> Dict:
     base_image = load_base_image()
 

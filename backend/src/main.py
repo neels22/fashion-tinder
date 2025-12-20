@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query, HTTPException, status, Body, File, UploadFil
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from .scripts.image_generation import create_multiple_images, create_single_image
+from .scripts.image_generation import create_multiple_images, create_single_image, set_input_image_path
 import uuid
 app = FastAPI()
 
@@ -49,6 +49,7 @@ async def upload_image(file: UploadFile = File(...)):
     new_filename = f"{uuid.uuid4().hex}{ext}"
     save_path = UPLOAD_DIR / new_filename #Using / on Path objects joins paths.
 
+    set_input_image_path(new_filename)
     # 3. Save to disk (reads the whole file into memory; fine for small images)
     try:
         file_bytes = await file.read()
@@ -74,4 +75,10 @@ to pick up the image uplaoded by user -- we need to identify which image did the
 - so when user clicks on generate image button we can use the updated input_image path for the image generation
 - this is good for now for a single user use case 
 - but for a multi user use case we need to identify which image did the user upload
+
+- ill have to create new function called set_input_image_path which will be called by uplaoded image 
+-- this will set the inputimage path 
+input_image_path = set_input_image_path(new_filename)
+-- load_image function will load the image 
+
 """
