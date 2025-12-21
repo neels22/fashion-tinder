@@ -28,7 +28,12 @@ async def root():
 
 @app.get("/multiple_images")
 async def generate_multiple_images():
-    return create_multiple_images()
+    results = create_multiple_images()
+    for result in results:
+        if result.get("image_path"):
+            filename = result["image_path"].replace("\\", "/").split("/")[-1]
+            result["image_url"] = f"/images/{filename}"
+    return results
 
 @app.get("/single_image")
 async def generate_single_image():
@@ -66,19 +71,3 @@ async def upload_image(file: UploadFile = File(...)):
     }   
 
 
-# todo figure out a way to provide the uploaded image to the image generation script 
-"""
-to pick up the image uplaoded by user -- we need to identify which image did the user upload
-- right now there no way to identify which image did the user upload
-- so which ever is the latest image uploaded by the user will be used for the image generation
-- so when user uploads a new image maybe we can update the input_image path with the name of this new image
-- so when user clicks on generate image button we can use the updated input_image path for the image generation
-- this is good for now for a single user use case 
-- but for a multi user use case we need to identify which image did the user upload
-
-- ill have to create new function called set_input_image_path which will be called by uplaoded image 
--- this will set the inputimage path 
-input_image_path = set_input_image_path(new_filename)
--- load_image function will load the image 
-
-"""

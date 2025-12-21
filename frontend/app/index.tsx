@@ -1,4 +1,4 @@
-import { Text, View, Button, StyleSheet, Image } from "react-native";
+import { Text, View, Button, StyleSheet, Image, ScrollView } from "react-native";
 import axios from "axios";
 import React, { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
@@ -10,6 +10,7 @@ export default function Index() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const [multipleImages, setMultipleImages] = useState<any>(null);
 
   const generateImage = async () => {
     try {
@@ -36,7 +37,7 @@ export default function Index() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images', 'videos'],
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [16, 9],
       quality: 1,
     });
 
@@ -78,19 +79,26 @@ export default function Index() {
     }
   };
   
-
+  const generateMultipleImages = async() =>{
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/multiple_images`);
+      console.log('API Response:', JSON.stringify(response.data, null, 2));
+      setMultipleImages(response.data);
+      console.log('Multiple Images:', multipleImages);
+    }
+    catch(error){
+      console.error('Error generating multiple images:', error);
+    }
+    finally{
+      setLoading(false);
+    }
+  }
     
 
     
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}
-    >
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={{ fontSize: 18, marginBottom: 20 }}>Hey there! I am indraneel</Text>
 
       <Button title="Pick Image" color="blue" onPress={pickImage} />
@@ -100,6 +108,13 @@ export default function Index() {
         color="blue" 
         onPress={generateImage}
         disabled={loading}
+      />
+
+      <Button
+      title={loading ? "Generating Multiple Images..." : "Generate Multiple Images"}
+      color="blue"
+      onPress={generateMultipleImages}
+      disabled={loading}
       />
       
       {data && (
@@ -118,11 +133,32 @@ export default function Index() {
           )}
         </View>
       )}
-    </View>
+
+      {multipleImages &&
+          (
+            <View style={{ marginTop: 20, alignItems: "center" }}>
+              <Text>Multiple Images</Text>
+
+              {multipleImages.map((image: any) => (
+                <Image 
+                source={{ uri: `${API_URL}${image.image_url}` }} 
+                style={styles.image}
+                 resizeMode="contain" key={image.image_path}>
+                </Image>
+              ))}
+            </View>
+          )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
   image: {
     width: 300,
     height: 300,
@@ -130,3 +166,19 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
+
+/*
+- single image generation is working fine 
+- the image is getting displayed in the frontend
+- multiple image generation hasnt been tested 
+- image upload is working fine 
+- will probably show all the images one below another for now 
+- the images are present in data object 
+- probably will loop through the data object and display the images one below another 
+- or better way is to use map i guess 
+
+
+
+
+*/
