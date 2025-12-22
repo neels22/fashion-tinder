@@ -2,11 +2,13 @@ import { Text, View, Button, StyleSheet, Image, ScrollView } from "react-native"
 import axios from "axios";
 import React, { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
+import { verifyInstallation } from 'nativewind';
 
 const API_URL = "http://10.0.0.108:8000";
 
 
 export default function Index() {
+  verifyInstallation();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
@@ -99,7 +101,10 @@ export default function Index() {
     
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={{ fontSize: 18, marginBottom: 20 }}>Hey there! I am indraneel</Text>
+      <View className="bg-blue-500 p-4 rounded-lg mb-4">
+        <Text className="text-xl font-semibold text-white">Hey there! I am indraneel</Text>
+        <Text className="text-sm text-yellow-300 mt-2">Testing NativeWind styles</Text>
+      </View>
 
       <Button title="Pick Image" color="blue" onPress={pickImage} />
 
