@@ -6,7 +6,11 @@ from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
 from PIL import Image
+from pillow_heif import register_heif_opener
 from ..prompts_dir.prompts import prompts_arr
+
+# Register HEIF opener so PIL can read HEIC files
+register_heif_opener()
 
 dotenv.load_dotenv()
 client = genai.Client()

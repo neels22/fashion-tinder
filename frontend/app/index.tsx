@@ -37,19 +37,21 @@ export default function Index() {
       alert('permissions not granted');
       return;
     }
+    
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images', 'videos'],
-      allowsEditing: true,
-      aspect: [16, 9],
+      mediaTypes: ['images'],
       quality: 1,
     });
 
     console.log(result);
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      console.log(result.assets[0].uri);
-      uploadImage(result.assets[0].uri);
+      const selectedImage = result.assets[0];
+      console.log('Selected image URI:', selectedImage.uri);
+      console.log('Dimensions:', `${selectedImage.width}x${selectedImage.height}`);
+      
+      setImage(selectedImage.uri);
+      uploadImage(selectedImage.uri);
     }
   };
 
@@ -81,7 +83,7 @@ export default function Index() {
       console.error('Error uploading image:', error);
     }
   };
-  
+
   const generateMultipleImages = async() =>{
     try {
       setLoading(true);
