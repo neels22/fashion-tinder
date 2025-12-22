@@ -64,7 +64,7 @@ export const TinderCard = ({ image, onSwipeLeft, onSwipeRight }: TinderCardProps
       <Animated.View
         className="absolute h-full w-full items-center justify-center rounded-lg"
         style={animatedStyle}>
-        <Image source={{ uri: image }} className="h-full w-full rounded-lg" />
+        <Image source={{ uri: image }} className="h-full w-full rounded-lg"  resizeMode="contain"/>
       </Animated.View>
     </GestureDetector>
   );
