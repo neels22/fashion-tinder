@@ -13,6 +13,7 @@ export default function Index() {
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [multipleImages, setMultipleImages] = useState<any>(null);
+  const [visibleImages, setVisibleImages] = useState<any>(null);
 
   const generateImage = async () => {
     try {
@@ -87,6 +88,7 @@ export default function Index() {
       const response = await axios.get(`${API_URL}/multiple_images`);
       console.log('API Response:', JSON.stringify(response.data, null, 2));
       setMultipleImages(response.data);
+      setVisibleImages(response.data);
       console.log('Multiple Images:', multipleImages);
     }
     catch(error){
@@ -96,6 +98,16 @@ export default function Index() {
       setLoading(false);
     }
   }
+
+  const removeTopCard = () => {
+    setTimeout(() => {
+      setVisibleImages((prev: any) => {
+        if (!prev || prev.length === 0) return prev;
+        // Remove the last card (last rendered = top of stack)
+        return prev.slice(0, -1);
+      });
+    }, 400); // Wait for swipe animation to complete
+  };
     
 
     
@@ -154,17 +166,23 @@ export default function Index() {
             </View>
           )} */}
 
-     {multipleImages &&
+     {visibleImages && visibleImages.length > 0 &&
           (
             <View style={{ marginTop: 20, alignItems: "center" }}>
-              <Text>Multiple Images</Text>
+              <Text>Multiple Images ({visibleImages.length} remaining)</Text>
 
               <View style={{ height: 500, width: 350, position: 'relative' }}>
-              {multipleImages.map((image: any) => (
+              {visibleImages.map((image: any) => (
                 <TinderCard 
                 image={`${API_URL}${image.image_url}` as string} 
-                onSwipeLeft={() => {console.log('swiped left')}}
-                onSwipeRight={() => {console.log('swiped right')}}
+                onSwipeLeft={() => {
+                  console.log('swiped left');
+                  removeTopCard();
+                }}
+                onSwipeRight={() => {
+                  console.log('swiped right');
+                  removeTopCard();
+                }}
                 key={image.image_path}
                 />
               ))}
