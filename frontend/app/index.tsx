@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import { verifyInstallation } from 'nativewind';
-
+import { TinderCard } from '../components/tinder-card';
 const API_URL = "http://10.0.0.108:8000";
 
 
@@ -139,7 +139,7 @@ export default function Index() {
         </View>
       )}
 
-      {multipleImages &&
+      {/* {multipleImages &&
           (
             <View style={{ marginTop: 20, alignItems: "center" }}>
               <Text>Multiple Images</Text>
@@ -152,7 +152,27 @@ export default function Index() {
                 </Image>
               ))}
             </View>
+          )} */}
+
+     {multipleImages &&
+          (
+            <View style={{ marginTop: 20, alignItems: "center" }}>
+              <Text>Multiple Images</Text>
+
+              <View style={{ height: 500, width: 350, position: 'relative' }}>
+              {multipleImages.map((image: any) => (
+                <TinderCard 
+                image={`${API_URL}${image.image_url}` as string} 
+                onSwipeLeft={() => {console.log('swiped left')}}
+                onSwipeRight={() => {console.log('swiped right')}}
+                key={image.image_path}
+                />
+              ))}
+              </View>
+            </View>
           )}
+        
+
     </ScrollView>
   );
 }
