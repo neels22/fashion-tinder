@@ -137,18 +137,22 @@ export default function Index() {
       />
       
       {data && (
-        <View style={{ marginTop: 20, alignItems: "center" }}>
+        <View style={{ marginTop: 20, alignItems: "center" }} >
           <Text>Image URL: {data.image_url || 'No URL'}</Text>
           <Text>Image Path: {data.image_path || 'No path'}</Text>
           
           {data.image_url && (
-            <Image 
-              source={{ uri: `${API_URL}${data.image_url}` }} 
-              style={styles.image} 
-              resizeMode="contain" 
-              onLoad={() => console.log('Image loaded successfully!')}
-              onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
-            />
+                  <View style={{ height: 500, width: 350, position: 'relative' }}>
+                  <TinderCard 
+                    image={`${API_URL}${data.image_url}` as string} 
+                    onSwipeLeft={() => {
+                      console.log('swiped left');
+                    }}
+                    onSwipeRight={() => {
+                      console.log('swiped right');
+                    }}
+                  />
+                </View>
           )}
         </View>
       )}

@@ -61,11 +61,26 @@ export const TinderCard = ({ image, onSwipeLeft, onSwipeRight }: TinderCardProps
 
   return (
     <GestureDetector gesture={PanGesture}>
-      <Animated.View
-        className="absolute h-full w-full items-center justify-center rounded-lg"
-        style={animatedStyle}>
-        <Image source={{ uri: image }} className="h-full w-full rounded-lg"  resizeMode="contain"/>
-      </Animated.View>
+<Animated.View
+  style={[
+    {
+      position: 'absolute',
+      height: '100%',
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 16,
+      overflow: 'hidden',
+      backgroundColor: '#000', // or any color you prefer
+    },
+    animatedStyle
+  ]}>
+  <Image 
+    source={{ uri: image }} 
+    style={{ height: '100%', width: '100%' }}
+    resizeMode="contain"
+  />
+</Animated.View>
     </GestureDetector>
   );
 };
