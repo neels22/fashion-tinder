@@ -1,6 +1,6 @@
 
 
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
 from models.user import USER
 from db.database import engine, get_session
 
@@ -19,6 +19,16 @@ def create_user():
         session.commit()
         print(f"✅ User {user.name} created successfully!")
 
+def read_users():
+    with get_session() as session:
+        statement = select(USER)
+        result = session.exec(statement).all()
+        # for user in result:
+        #     print(f"User: {user.name}, Email: {user.email}")
+        print(result)
+
+
 if __name__ == "__main__":
-    create_tables()
-    create_user()
+    # create_tables()
+    # create_user()
+    read_users()
