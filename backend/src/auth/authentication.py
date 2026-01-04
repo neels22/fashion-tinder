@@ -1,0 +1,73 @@
+import os
+from datetime import datetime, timedelta
+from typing import Annotated
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+from sqlmodel import Session, select
+from dotenv import load_dotenv
+
+from ..db.database import get_db_session
+from ..models.user import USER, UserCreate, UserResponse, Token
+
+load_dotenv()
+
+# Config
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+
+# Password utilities
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+# Token utilities
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_token(token: str) -> str | None:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return email
+    except jwt.PyJWTError:
+        return None
+
+
+
+# Dependency to get current user
+def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    session: Annotated[Session, Depends(get_db_session)]
+) -> USER:
+    email = verify_token(token)
+    if email is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = session.exec(select(USER).where(USER.email == email)).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

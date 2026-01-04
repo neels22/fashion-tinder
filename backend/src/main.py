@@ -1,11 +1,22 @@
-from fastapi import FastAPI, Query, HTTPException, status, Body, File, UploadFile
+from fastapi import FastAPI, Query, HTTPException, status, Body, File, UploadFile, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from typing import Annotated
+from sqlmodel import select
+
 from .scripts.image_generation import create_multiple_images, create_single_image, set_input_image_path
 import uuid
-from .models.user import USER
+from .models.user import USER, UserCreate, UserResponse, Token
 from .scripts.init_db import create_user, read_users
+from .auth.authentication import (
+    get_password_hash, 
+    verify_password, 
+    create_access_token,
+    get_current_user
+)
+from .db.database import get_db_session
 app = FastAPI()
 
 app.add_middleware(
@@ -73,8 +84,6 @@ async def upload_image(file: UploadFile = File(...)):
     }   
 
 
-# create user
-# read users
 
 @app.post("/create_user")
 async def create_user_api(user: USER):
@@ -83,3 +92,41 @@ async def create_user_api(user: USER):
 @app.get("/read_users")
 async def read_users_api():
     return read_users()
+
+
+# Authentication endpoints
+@app.post("/register", response_model=UserResponse)
+def register_user(user: UserCreate, session = Depends(get_db_session)):
+    # Check if email exists
+    existing = session.exec(select(USER).where(USER.email == user.email)).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user with hashed password
+    new_user = USER(
+        name=user.name,
+        email=user.email,
+        password=get_password_hash(user.password)
+    )
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+    return new_user
+
+
+@app.post("/login", response_model=Token)
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session = Depends(get_db_session)):
+    user = session.exec(select(USER).where(USER.email == form_data.username)).first()
+    if not user or not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/me", response_model=UserResponse)
+def read_current_user(current_user: Annotated[USER, Depends(get_current_user)]):
+    return current_user

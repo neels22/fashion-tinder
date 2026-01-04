@@ -12,7 +12,13 @@ if not DATABASE_URL:
     
 engine = create_engine(DATABASE_URL, echo=True,pool_pre_ping=True)
 
+# For use with 'with' statements
 @contextmanager
-def get_session()-> Generator[Session, None, None]:
+def get_session() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session
+
+# For use with FastAPI Depends()
+def get_db_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
