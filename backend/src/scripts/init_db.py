@@ -1,8 +1,8 @@
 
 
 from sqlmodel import SQLModel, select
-from models.user import USER
-from db.database import engine, get_session
+from ..models.user import USER
+from ..db.database import engine, get_session
 
 
 def create_tables():
@@ -11,13 +11,13 @@ def create_tables():
     SQLModel.metadata.create_all(engine)
     print("✅ All tables created successfully!")
 
-
-def create_user():
+def create_user(user: USER):
     with get_session() as session:
-        user = USER(name="John Doe", email="john.doe@example.com", password="password")
         session.add(user)
         session.commit()
+        session.refresh(user)  # This populates the id and timestamps
         print(f"✅ User {user.name} created successfully!")
+        return user
 
 def read_users():
     with get_session() as session:
@@ -26,6 +26,7 @@ def read_users():
         # for user in result:
         #     print(f"User: {user.name}, Email: {user.email}")
         print(result)
+        return result
 
 
 if __name__ == "__main__":

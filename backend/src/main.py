@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from .scripts.image_generation import create_multiple_images, create_single_image, set_input_image_path
 import uuid
+from .models.user import USER
+from .scripts.init_db import create_user, read_users
 app = FastAPI()
 
 app.add_middleware(
@@ -71,3 +73,13 @@ async def upload_image(file: UploadFile = File(...)):
     }   
 
 
+# create user
+# read users
+
+@app.post("/create_user")
+async def create_user_api(user: USER):
+    return create_user(user)
+
+@app.get("/read_users")
+async def read_users_api():
+    return read_users()
