@@ -40,7 +40,7 @@ async def root():
     return {"message": "Hello World"}
 
 @app.get("/multiple_images")
-async def generate_multiple_images():
+async def generate_multiple_images(current_user: Annotated[USER, Depends(get_current_user)]):
     results = create_multiple_images()
     for result in results:
         if result.get("image_path"):
@@ -49,7 +49,7 @@ async def generate_multiple_images():
     return results
 
 @app.get("/single_image")
-async def generate_single_image():
+async def generate_single_image(current_user: Annotated[USER, Depends(get_current_user)]):
     result = create_single_image()
     # Convert the file path to a URL path
     if result.get("image_path"):
@@ -58,7 +58,10 @@ async def generate_single_image():
     return result
 
 @app.post("/upload_image")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(
+    file: UploadFile = File(...),
+    current_user: Annotated[USER, Depends(get_current_user)]
+):
     # 1. Validate content type (simple check)
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
