@@ -56,6 +56,8 @@ def verify_token(token: str) -> str | None:
 
 
 # Dependency to get current user
+# TODO Add caching ( redis or memory cache ) to the user object to avoid multiple database queries
+# later maybe create a separate user service
 def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[Session, Depends(get_db_session)]
